@@ -1,0 +1,780 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "version": "2.0.0",
+        "title": "Quick Dashboard API",
+        "description": "Manages data for the Dashboard",
+        "contact": {
+            "name": "Benjamin Weare"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+        }
+    },
+    "servers": [
+        {
+            "url": "https://localhost:8000",
+            "description": "Local Development"
+        },
+        {
+            "url": "https://intranet-api.local",
+            "description": "Hosted Internally"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Sticky Notes",
+            "description": "This allows me to save, edit and delete Sticky Notes"
+        },
+        {
+            "name": "News",
+            "description": "This allows me to save news articles"
+        },
+        {
+            "name": "Weather",
+            "description": "This allows me to save weather articles"
+        },
+        {
+            "name": "Search",
+            "description": "This allows me to use a custom Google Search engine"
+        },
+        {
+            "name": "Friday",
+            "description": "This allows me to record stats of our pathetic Friday gameplay"
+        },
+        {
+            "name": "Sync",
+            "description": "This allows me to Sync the Weather and News endpoints"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "APIKeyAuth": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-API-KEY"
+            }
+        },
+        "schemas": {
+            "id": {
+                "type": "string"
+            },
+            "query": {
+                "type": "string"
+            },
+            "weatherOption": {
+                "type": "string",
+                "enum": ["daily"]
+            },
+            "channelId": {
+                "type": "string"
+            },
+            "fridayDistance": {
+                "type": "string",
+                "enum": ["today", "all"]
+            },
+            "fridayAction": {
+                "type": "string",
+                "enum": ["add", "remove"]
+            },
+            "fridayType": {
+                "type": "string",
+                "enum": ["win", "loss"]
+            },
+            "error": {
+                "required": ["message"],
+                "properties": {
+                    "message": { "type": "string" }
+                }
+            },
+            "forbidden": {
+                "required": ["message"],
+                "properties": {
+                    "message": { "type": "string" }
+                }
+            },
+            "sticky": {
+                "properties": {
+                    "message": { "type": "string" },
+                    "itemsLength": { "type": "integer" },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "_id": { "type": "object" },
+                                "dateTime": { "type": "string" },
+                                "top": { "type": "number" },
+                                "left": { "type": "number" },
+                                "title": { "type": "string" },
+                                "content": { "type": "string" },
+                                "color": { "type": "string" },
+                                "showColor": { "type": "string" }
+                            }
+                        }
+                    }
+                }
+            },
+            "stickyId": {
+                "properties": {
+                    "message": { "type": "string" },
+                    "response": {
+                        "type": "object",
+                        "properties": {
+                            "_id": { "type": "string" },
+                            "dateTime": { "type": "string" },
+                            "top": { "type": "integer" },
+                            "left": { "type": "integer" },
+                            "title": { "type": "string" },
+                            "content": { "type": "string" },
+                            "color": { "type": "string" },
+                            "showColor": { "type": "string" }
+                        }
+                    }
+                }
+            },
+            "sync": { "properties": { "message": { "type": "string" } } },
+            "loginRequest": {
+                "properties": { "username": { "type": "string" } }
+            },
+            "userDetails": {
+                "properties": {
+                    "username": { "type": "string" },
+                    "password": { "type": "string" },
+                    "firstname": { "type": "string" },
+                    "surname": { "type": "string" },
+                    "email": { "type": "string" }
+                }
+            },
+            "stickyBody": {
+                "type": "object"
+            },
+            "stickyEdit": {
+                "type": "object",
+                "required": ["top", "left", "title", "content", "color"],
+                "properties": {
+                    "top": { "type": "number" },
+                    "left": { "type": "number" },
+                    "title": { "type": "string" },
+                    "content": { "type": "string" },
+                    "color": { "type": "string" }
+                }
+            },
+            "news": {
+                "type": "object",
+                "properties": {
+                    "message": { "type": "string" },
+                    "itemsLength": { "type": "integer" },
+                    "items": { "type": "array" }
+                }
+            },
+            "weather": {
+                "type": "object",
+                "properties": {
+                    "message": { "type": "string" },
+                    "itemsLength": { "type": "integer" },
+                    "items": { "type": "object" }
+                }
+            },
+            "channel": {
+                "type": "object",
+                "properties": {
+                    "message": { "type": "string" },
+                    "itemsLength": { "type": "integer" },
+                    "items": { "type": "object" }
+                }
+            }
+        }
+    },
+    "security": [{ "APIKeyAuth": [] }],
+    "paths": {
+        "/sticky": {
+            "get": {
+                "description": "Returns all notes",
+                "tags": ["Sticky Notes"],
+                "summary": "Returns all notes",
+                "x-eov-operation-handler": "sticky",
+                "operationId": "getStickies",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sticky"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/stickyBody"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "tags": ["Sticky Notes"],
+                "summary": "Returns a new note",
+                "x-eov-operation-handler": "sticky",
+                "operationId": "postSticky",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/stickyId"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sticky/{id}": {
+            "get": {
+                "description": "Returns a note",
+                "tags": ["Sticky Notes"],
+                "summary": "Returns a note",
+                "x-eov-operation-handler": "sticky",
+                "operationId": "getSticky",
+                "parameters": [
+                    {
+                        "schema": { "$ref": "#/components/schemas/id" },
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/stickyId"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Edits a note",
+                "tags": ["Sticky Notes"],
+                "summary": "Edits a note",
+                "x-eov-operation-handler": "sticky",
+                "operationId": "patchSticky",
+                "parameters": [
+                    {
+                        "schema": { "$ref": "#/components/schemas/id" },
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/stickyEdit"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sticky"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Edits a note",
+                "tags": ["Sticky Notes"],
+                "summary": "Edits a note",
+                "x-eov-operation-handler": "sticky",
+                "operationId": "deleteSticky",
+                "parameters": [
+                    {
+                        "schema": { "$ref": "#/components/schemas/id" },
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sticky"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/news": {
+            "get": {
+                "tags": ["News"],
+                "summary": "Returns all stored news",
+                "x-eov-operation-handler": "news",
+                "operationId": "getNews",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": { "type": "string" },
+                                        "itemsLength": { "type": "integer" },
+                                        "items": { "type": "array" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": ["message"],
+                                    "properties": {
+                                        "message": { "type": "string" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/weather": {
+            "get": {
+                "parameters": [
+                    {
+                        "schema": {
+                            "$ref": "#/components/schemas/weatherOption"
+                        },
+                        "in": "query",
+                        "name": "date",
+                        "required": true
+                    }
+                ],
+                "tags": ["Weather"],
+                "summary": "Returns all stored weather",
+                "x-eov-operation-handler": "weather",
+                "operationId": "getWeather",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/weather"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/discord/{channel}": {
+            "get": {
+                "parameters": [
+                    {
+                        "schema": {
+                            "$ref": "#/components/schemas/channelId"
+                        },
+                        "in": "path",
+                        "name": "channel",
+                        "required": true
+                    }
+                ],
+                "tags": ["Discord"],
+                "summary": "Checks Discord",
+                "x-eov-operation-handler": "discord",
+                "operationId": "getDiscord",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/channel"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sync": {
+            "get": {
+                "tags": ["Sync"],
+                "summary": "Syncs news and weather from API endpoints",
+                "x-eov-operation-handler": "sync",
+                "operationId": "getSync",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sync"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/friday": {
+            "x-swagger-router-controller": "friday",
+            "get": {
+                "parameters": [
+                    {
+                        "schema": {
+                            "$ref": "#/components/schemas/fridayDistance"
+                        },
+                        "name": "fridayDistance",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "tags": ["Friday"],
+                "summary": "Gets Friday's data",
+                "x-eov-operation-handler": "friday",
+                "operationId": "getFriday",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sync"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "parameters": [
+                    {
+                        "schema": {
+                            "$ref": "#/components/schemas/fridayDistance"
+                        },
+                        "name": "fridayDistance",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "tags": ["Friday"],
+                "summary": "Delete Friday's data (today, all)",
+                "x-eov-operation-handler": "friday",
+                "operationId": "deleteFriday",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sync"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "parameters": [
+                    {
+                        "schema": {
+                            "$ref": "#/components/schemas/fridayAction"
+                        },
+                        "name": "fridayAction",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "schema": {
+                            "$ref": "#/components/schemas/fridayType"
+                        },
+                        "name": "fridayType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "tags": ["Friday"],
+                "summary": "Patch Friday's data (win, loss)",
+                "x-eov-operation-handler": "friday",
+                "operationId": "patchFriday",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sync"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/search": {
+            "x-swagger-router-controller": "google",
+            "get": {
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "query",
+                        "schema": {
+                            "$ref": "#/components/schemas/query"
+                        }
+                    }
+                ],
+                "tags": ["Search"],
+                "summary": "Gets Google results",
+                "x-eov-operation-handler": "google",
+                "operationId": "getGoogle",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sync"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth": {
+            "x-swagger-router-controller": "auth",
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/loginRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "tags": ["Authentication"],
+                "summary": "Attempts to retrieve username",
+                "x-eov-operation-handler": "auth",
+                "operationId": "loginRequest",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sync"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/create": {
+            "x-swagger-router-controller": "auth",
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/userDetails"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "tags": ["Authentication"],
+                "summary": "Gets Signed in user information",
+                "x-eov-operation-handler": "auth",
+                "operationId": "newUser",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/sync"
+                                }
+                            }
+                        }
+                    },
+                    "default": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

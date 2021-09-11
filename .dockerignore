@@ -1,0 +1,15 @@
+cert
+build
+.dockerignore
+.env
+.env.development
+.env.template
+.env.development.template
+node_modules
+Dockerfile
+Dockerfile.prod
+.git
+.eslintcache
+.gitignore
+README.md
+src/index.css

@@ -1,0 +1,30 @@
+{
+    "name": "swagger-example-3.0",
+    "version": "1.0.0",
+    "description": "This is a quickstart swagger UI",
+    "main": "src",
+    "scripts": {
+        "start": "nodemon .",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Benjamin Weare",
+    "license": "ISC",
+    "dependencies": {
+        "@apidevtools/json-schema-ref-parser": "^9.0.9",
+        "cors": "^2.8.5",
+        "discord.js": "^13.1.0",
+        "dotenv": "^10.0.0",
+        "express": "^4.17.1",
+        "express-openapi-validator": "^4.13.0",
+        "js-yaml": "^4.1.0",
+        "mongodb": "^4.1.1",
+        "node-fetch": "^2.6.2",
+        "node-html-parser": "^4.1.4",
+        "nodemon": "^2.0.12",
+        "request": "^2.88.2",
+        "request-promise": "^4.2.6",
+        "socket.io": "^4.2.0",
+        "swagger-routes-express": "^3.3.1",
+        "swagger-ui-express": "^4.1.6"
+    }
+}
