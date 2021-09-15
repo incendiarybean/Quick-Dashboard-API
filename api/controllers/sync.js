@@ -1,6 +1,6 @@
 const HTMLparser = require("node-html-parser");
 const axios = require("axios");
-const db = require("../adapters/db");
+const db = require("../helpers/db-helper");
 const config = require("../helpers/module-config");
 
 /*--------------*/

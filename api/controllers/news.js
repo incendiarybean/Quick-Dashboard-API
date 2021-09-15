@@ -1,4 +1,4 @@
-const db = require("../adapters/db");
+const db = require("../helpers/db-helper");
 
 /*--------------*/
 /*   ACTIONS    */
