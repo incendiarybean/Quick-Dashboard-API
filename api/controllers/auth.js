@@ -1,23 +1,25 @@
-"use strict";
-
 const db = require("../adapters/db");
 
-//////////////////
-//// ACTIONS /////
-//////////////////
+/*--------------*/
+/*   ACTIONS    */
+/*--------------*/
 
 const Login = async (req, res) => {
     try {
-        db.selectOne("users", {
-            username: req.body.username,
-        }).then((data) => {
-            if (
-                !data.item ||
-                data.item.password !== req.body.password ||
-                !req.body.password
-            ) {
-                return res.json({ message: "Username or Password incorrect." });
-            } else {
+        return db
+            .selectOne("users", {
+                username: req.body.username,
+            })
+            .then((data) => {
+                if (
+                    !data.item ||
+                    data.item.password !== req.body.password ||
+                    !req.body.password
+                ) {
+                    return res.json({
+                        message: "Username or Password incorrect.",
+                    });
+                }
                 return res.json({
                     message: "Validated Successfully.",
                     user: {
@@ -27,8 +29,7 @@ const Login = async (req, res) => {
                         email: data.item.email,
                     },
                 });
-            }
-        });
+            });
     } catch (e) {
         return res.status(400).json({
             message: `Cannot complete action: ${req.method} on ${req.path}`,
@@ -46,40 +47,38 @@ const SignUp = async (req, res) => {
             !req.body.surname ||
             !req.body.email
         ) {
-            return res
-                .status(422)
-                .json({
-                    message: "You're please ensure to fill out the form!",
-                });
+            return res.status(422).json({
+                message: "You're please ensure to fill out the form!",
+            });
         }
 
-        db.select("users", { username: req.body.username }).then((data) => {
-            if (data.itemsLength !== 0) {
-                return res
-                    .status(403)
-                    .json({ message: "Username is already taken." });
-            } else {
-                db.insert("users", {
-                    username: req.body.username,
-                    password: req.body.password,
-                    firstname: req.body.firstname,
-                    surname: req.body.surname,
-                    email: req.body.email,
-                }).then((data) => {
-                    if (!data.id) {
-                        return res
-                            .status(502)
-                            .json({
+        return db
+            .select("users", { username: req.body.username })
+            .then((usersResponse) => {
+                if (usersResponse.itemsLength !== 0) {
+                    return res
+                        .status(403)
+                        .json({ message: "Username is already taken." });
+                }
+                return db
+                    .insert("users", {
+                        username: req.body.username,
+                        password: req.body.password,
+                        firstname: req.body.firstname,
+                        surname: req.body.surname,
+                        email: req.body.email,
+                    })
+                    .then((userResponse) => {
+                        if (!userResponse.id) {
+                            return res.status(502).json({
                                 message: "Couldn't create a user account.",
                             });
-                    } else {
+                        }
                         return res.json({
                             message: "Account created successfully.",
                         });
-                    }
-                });
-            }
-        });
+                    });
+            });
     } catch (e) {
         return res.status(400).json({
             message: `Cannot complete action: ${req.method} on ${req.path}`,
@@ -88,19 +87,15 @@ const SignUp = async (req, res) => {
     }
 };
 
-//////////////////
-//// HANDLER /////
-//////////////////
+/*--------------*/
+/*    HANDLER   */
+/*--------------*/
 
-const loginRequest = (req, res) => {
-    return Login(req, res);
-};
+const loginRequest = (req, res) => Login(req, res);
 
-const newUser = (req, res) => {
-    return SignUp(req, res);
-};
+const newUser = (req, res) => SignUp(req, res);
 
 module.exports = {
-    loginRequest: loginRequest,
-    newUser: newUser,
+    loginRequest,
+    newUser,
 };

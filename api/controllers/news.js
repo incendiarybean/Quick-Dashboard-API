@@ -1,16 +1,15 @@
-"use strict";
-
 const db = require("../adapters/db");
 
-//////////////////
-//// ACTIONS /////
-//////////////////
+/*--------------*/
+/*   ACTIONS    */
+/*--------------*/
 
 const listNews = async (req, res) => {
     try {
         return res.json(
-            await db.select("news").then((data) => {
-                data.items = data.items.pages;
+            await db.select("news").then((response) => {
+                const data = response;
+                data.items = response.items.pages;
                 return data;
             })
         );
@@ -22,14 +21,12 @@ const listNews = async (req, res) => {
     }
 };
 
-//////////////////
-//// HANDLER /////
-//////////////////
+/*--------------*/
+/*    HANDLER   */
+/*--------------*/
 
-const getNews = (req, res) => {
-    return listNews(req, res);
-};
+const getNews = (req, res) => listNews(req, res);
 
 module.exports = {
-    getNews: getNews,
+    getNews,
 };

@@ -1,10 +1,10 @@
-const MongoClient = require("mongodb").MongoClient,
-    mongoDB = require("../helpers/module-config").mongoDB;
+const { MongoClient } = require("mongodb");
+const { mongoDB } = require("../helpers/module-config");
 
 const uri = `mongodb://${mongoDB.username}:${mongoDB.password}@${mongoDB.host}${mongoDB.port}`;
 module.exports = {
-    connect: () => {
-        return new Promise((resolve, reject) => {
+    connect: () =>
+        new Promise((resolve, reject) => {
             try {
                 MongoClient.connect(
                     uri,
@@ -12,9 +12,12 @@ module.exports = {
                         useUnifiedTopology: true,
                         useNewUrlParser: true,
                     },
-                    function (err, client) {
-                        if (err) return reject({ code: 401, message: err });
-                        var db = client.db("intranet");
+                    (err, client) => {
+                        if (err)
+                            return reject(
+                                new Error({ code: 401, message: err })
+                            );
+                        const db = client.db("intranet");
                         return resolve({ db, client });
                     }
                 );
@@ -23,10 +26,9 @@ module.exports = {
             }
         }).catch((e) => {
             console.log(e);
-        });
-    },
-    insert: (collection, data) => {
-        return new Promise(async (resolve, reject) => {
+        }),
+    insert: (collection, data) =>
+        new Promise((resolve, reject) => {
             module.exports.connect().then((connection) => {
                 connection.db
                     .collection(collection)
@@ -36,10 +38,9 @@ module.exports = {
                         return resolve({ res, id: data._id });
                     });
             });
-        });
-    },
-    delete: (collection, filter) => {
-        return new Promise(async (resolve, reject) => {
+        }),
+    delete: (collection, filter) =>
+        new Promise((resolve, reject) => {
             module.exports.connect().then((connection) => {
                 connection.db
                     .collection(collection)
@@ -49,10 +50,9 @@ module.exports = {
                         return resolve({ message: "Success", item: res });
                     });
             });
-        });
-    },
-    deleteMany: (collection, filter) => {
-        return new Promise(async (resolve, reject) => {
+        }),
+    deleteMany: (collection, filter) =>
+        new Promise((resolve, reject) => {
             module.exports.connect().then((connection) => {
                 connection.db
                     .collection(collection)
@@ -62,20 +62,18 @@ module.exports = {
                         return resolve({ message: "Success", item: res });
                     });
             });
-        });
-    },
-    drop: async (collection) => {
-        return new Promise(async (resolve, reject) => {
+        }),
+    drop: async (collection) =>
+        new Promise((resolve, reject) => {
             module.exports.connect().then((connection) => {
-                connection.db.collection(collection).drop((err, res) => {
+                connection.db.collection(collection).drop((err) => {
                     if (err) return reject(err);
                     return resolve({ message: "Dropped collection" });
                 });
             });
-        });
-    },
-    update: (collection, update, filter) => {
-        return new Promise(async (resolve, reject) => {
+        }),
+    update: (collection, update, filter) =>
+        new Promise((resolve, reject) => {
             module.exports.connect().then((connection) => {
                 connection.db
                     .collection(collection)
@@ -85,10 +83,9 @@ module.exports = {
                         return resolve({ message: "Success", item: res });
                     });
             });
-        });
-    },
-    replace: (collection, update, filter) => {
-        return new Promise(async (resolve, reject) => {
+        }),
+    replace: (collection, update, filter) =>
+        new Promise((resolve, reject) => {
             module.exports.connect().then((connection) => {
                 connection.db
                     .collection(collection)
@@ -98,11 +95,10 @@ module.exports = {
                         return resolve({ message: "Success", item: res });
                     });
             });
-        });
-    },
-    select: (collection, params) => {
-        if (!params) params = {};
-        return new Promise(async (resolve, reject) => {
+        }),
+    select: (collection, parameters) => {
+        const params = parameters || {};
+        return new Promise((resolve, reject) => {
             module.exports.connect().then((connection) => {
                 connection.db
                     .collection(collection)
@@ -116,20 +112,19 @@ module.exports = {
                                 itemsLength: res.length,
                                 items: res,
                             });
-                        } else {
-                            return resolve({
-                                message: "Success",
-                                itemsLength: res.length,
-                                items: res[0],
-                            });
                         }
+                        return resolve({
+                            message: "Success",
+                            itemsLength: res.length,
+                            items: res[0],
+                        });
                     });
             });
         });
     },
-    selectOne: (collection, params) => {
-        if (!params) params = {};
-        return new Promise(async (resolve, reject) => {
+    selectOne: (collection, parameters) => {
+        const params = parameters || {};
+        return new Promise((resolve, reject) => {
             module.exports.connect().then((connection) => {
                 connection.db
                     .collection(collection)

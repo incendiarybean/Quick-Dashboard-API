@@ -148,7 +148,10 @@
                 }
             },
             "stickyBody": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                    "author": { "type": "string" }
+                }
             },
             "stickyEdit": {
                 "type": "object",

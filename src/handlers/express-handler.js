@@ -1,11 +1,10 @@
-const express = require("express"),
-    swaggerUi = require("swagger-ui-express"),
-    OpenApiValidator = require("express-openapi-validator"),
-    path = require("path"),
-    cors = require("cors"),
-    swaggerSpec = require("../../api/swagger/swagger"),
-    refParser = require("@apidevtools/json-schema-ref-parser"),
-    Discord = require("./discord-handler");
+const express = require("express");
+const swaggerUi = require("swagger-ui-express");
+const OpenApiValidator = require("express-openapi-validator");
+const path = require("path");
+const cors = require("cors");
+const refParser = require("@apidevtools/json-schema-ref-parser");
+const swaggerSpec = require("../../api/swagger/swagger.json");
 
 const handler = async (app) => {
     const schema = await refParser.dereference(swaggerSpec);
@@ -29,7 +28,7 @@ const handler = async (app) => {
             return res.status(403).json({
                 message: "Incorrect API key!",
             });
-        next();
+        return next();
     });
 
     /*--------------------------*/

@@ -1,11 +1,9 @@
-"use strict";
+const { ObjectId } = require("mongodb");
+const db = require("../adapters/db");
 
-const db = require("../adapters/db"),
-    ObjectId = require("mongodb").ObjectId;
-
-//////////////////
-//// ACTIONS /////
-//////////////////
+/*--------------*/
+/*   ACTIONS    */
+/*--------------*/
 
 const listStickies = async (req, res) => {
     try {
@@ -78,26 +76,22 @@ const delSticky = async (req, res) => {
 
 const addSticky = async (req, res) => {
     try {
-        return res.json(
-            await db
-                .insert("sticky", {
-                    dateTime: new Date(),
-                    top: 100,
-                    left: 100,
-                    title: "",
-                    content: "",
-                    color: "blue",
-                    showColor: "hidden",
-                    author: req.body.author,
-                    lastModified: new Date().toISOString(),
-                })
-                .then((data) => {
-                    return {
-                        message: "Success",
-                        item: data.res.ops[0],
-                    };
-                })
-        );
+        return db
+            .insert("sticky", {
+                dateTime: new Date(),
+                top: 100,
+                left: 100,
+                title: "",
+                content: "",
+                color: "blue",
+                showColor: "hidden",
+                author: req.body.author,
+                lastModified: new Date().toISOString(),
+            })
+            .then((data) => {
+                req.params.id = data.id;
+                listSticky(req, res);
+            });
     } catch (e) {
         return res.status(400).json({
             message: `Cannot complete action: ${req.method} on ${req.path}`,
@@ -106,13 +100,13 @@ const addSticky = async (req, res) => {
     }
 };
 
-const checkSticky = (req) => {
-    return new Promise((resolve, reject) => {
+const checkSticky = (req) =>
+    new Promise((resolve, reject) => {
         let id;
         try {
             id = ObjectId(req.params.id);
         } catch (e) {
-            return reject({ code: 422, message: "Not a valid ID." });
+            return reject(new Error({ code: 422, message: "Not a valid ID." }));
         }
 
         const findValidItem = async () => {
@@ -121,70 +115,57 @@ const checkSticky = (req) => {
             })
                 .then((data) => {
                     if (!data.item)
-                        return reject({
-                            code: 404,
-                            message: "No item for this ID.",
-                        });
+                        return reject(
+                            new Error({
+                                code: 404,
+                                message: "No item for this ID.",
+                            })
+                        );
                     return resolve(data);
                 })
-                .catch((e) => {
-                    return reject({
-                        code: 400,
-                        message: "Couldn't search for ID.",
-                    });
-                });
+                .catch(() =>
+                    reject(
+                        new Error({
+                            code: 400,
+                            message: "Couldn't search for ID.",
+                        })
+                    )
+                );
         };
 
-        findValidItem();
+        return findValidItem();
     });
-};
 
-//////////////////
-//// HANDLER /////
-//////////////////
+/*--------------*/
+/*    HANDLER   */
+/*--------------*/
 
-const getStickies = (req, res) => {
-    return listStickies(req, res);
-};
+const getStickies = (req, res) => listStickies(req, res);
 
 const getSticky = (req, res) => {
     checkSticky(req)
-        .then((data) => {
-            return listSticky(req, res);
-        })
-        .catch((e) => {
-            return res.status(e.code).json({ message: e.message });
-        });
+        .then(() => listSticky(req, res))
+        .catch((e) => res.status(e.code).json({ message: e.message }));
 };
 
-const postSticky = (req, res) => {
-    return addSticky(req, res);
-};
+const postSticky = (req, res) => addSticky(req, res);
 
 const patchSticky = (req, res) => {
     checkSticky(req)
-        .then((data) => {
-            return editSticky(req, res);
-        })
-        .catch((e) => {
-            return res.status(e.code).json({ message: e.message });
-        });
+        .then(() => editSticky(req, res))
+        .catch((e) => res.status(e.code).json({ message: e.message }));
 };
 
 const deleteSticky = (req, res) => {
     checkSticky(req)
-        .then((data) => {
-            return delSticky(req, res);
-        })
-        .catch((e) => {
-            return res.status(e.code).json({ message: e.message });
-        });
+        .then(() => delSticky(req, res))
+        .catch((e) => res.status(e.code).json({ message: e.message }));
 };
 
 module.exports = {
-    getSticky: getSticky,
-    getStickies: getStickies,
-    postSticky: postSticky,
-    patchSticky: patchSticky,
-    deleteSticky: deleteSticky,
+    getSticky,
+    getStickies,
+    postSticky,
+    patchSticky,
+    deleteSticky,
 };

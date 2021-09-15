@@ -1,15 +1,14 @@
-"use strict";
+const Discord = require("../../src/handlers/discord-handler");
 
-const Discord = require("../../src/handlers/discord-handler"),
-    client = Discord.client;
+const { client } = Discord;
 
-//////////////////
-//// ACTIONS /////
-//////////////////
+/*--------------*/
+/*   ACTIONS    */
+/*--------------*/
 
-const getActiveChannels = async (client, GUILD_ALL_CHANNELS, GUILD_ITEM) => {
+const getActiveChannels = async (GUILD_ALL_CHANNELS) => {
     const LIST_CHANNELS = [];
-    for await (const C of GUILD_ALL_CHANNELS) {
+    GUILD_ALL_CHANNELS.map(async (C) => {
         const CHANNEL = C[1];
         const CHANNEL_NAME = CHANNEL.name;
         const CHANNEL_USERS = [...(await CHANNEL.members)];
@@ -20,8 +19,8 @@ const getActiveChannels = async (client, GUILD_ALL_CHANNELS, GUILD_ITEM) => {
             users: CHANNEL_USERS,
         };
 
-        LIST_CHANNELS.push(CHANNEL_DATA);
-    }
+        return LIST_CHANNELS.push(CHANNEL_DATA);
+    });
     return LIST_CHANNELS;
 };
 
@@ -37,9 +36,9 @@ const listDiscord = async (req, res) => {
 
     const GUILD_ITEM = await client.guilds.fetch(GUILD_ID);
 
-    const GUILD_ALL_MEMBERS = GUILD_ITEM.members.cache.filter((member) => {
-        return member;
-    });
+    const GUILD_ALL_MEMBERS = GUILD_ITEM.members.cache.filter(
+        (member) => member
+    );
 
     const GUILD_ONLINE_MEMBERS = GUILD_ALL_MEMBERS.filter(
         (member) =>
@@ -52,11 +51,7 @@ const listDiscord = async (req, res) => {
         (c) => c.type === "GUILD_VOICE"
     );
 
-    const GUILD_ACTIVE_CHANNELS = await getActiveChannels(
-        client,
-        GUILD_ALL_CHANNELS,
-        GUILD_ITEM
-    );
+    const GUILD_ACTIVE_CHANNELS = await getActiveChannels(GUILD_ALL_CHANNELS);
 
     return res.json({
         server: GUILD_ITEM,
@@ -65,14 +60,12 @@ const listDiscord = async (req, res) => {
     });
 };
 
-//////////////////
-//// HANDLER /////
-//////////////////
+/*--------------*/
+/*    HANDLER   */
+/*--------------*/
 
-const getDiscord = (req, res) => {
-    return listDiscord(req, res);
-};
+const getDiscord = (req, res) => listDiscord(req, res);
 
 module.exports = {
-    getDiscord: getDiscord,
+    getDiscord,
 };

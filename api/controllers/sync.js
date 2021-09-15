@@ -1,133 +1,120 @@
-"use strict";
+const HTMLparser = require("node-html-parser");
+const axios = require("axios");
+const db = require("../adapters/db");
+const config = require("../helpers/module-config");
 
-const db = require("../adapters/db"),
-    request = require("request-promise"),
-    fetch = require("node-fetch"),
-    config = require("../helpers/module-config"),
-    HTMLparser = require("node-html-parser");
+/*--------------*/
+/*   ACTIONS    */
+/*--------------*/
 
-//////////////////
-//// ACTIONS /////
-//////////////////
+const getWeather = async () =>
+    new Promise((resolve, reject) => {
+        const weatherConfig = config.weather;
+        const weatherUrl = new URL(
+            `${weatherConfig.url}?${new URLSearchParams(
+                weatherConfig.qs
+            ).toString()}`
+        ).toString();
 
-const getWeather = async (req, res) => {
-    return new Promise(async (resolve, reject) => {
-        let weather_config = config.weather;
-        request(weather_config)
-            .then((data) => {
-                data = JSON.parse(data);
-                if (data.httpCode === "429") {
-                    return reject(data.httpMessage);
-                } else {
-                    db.drop("weatherDaily")
-                        .then(() => {
-                            db.insert("weatherDaily", data)
-                                .then(() => {
-                                    return resolve();
-                                })
-                                .catch((e) => {
-                                    return reject(e);
-                                });
-                        })
-                        .catch((e) => {
-                            return reject(e);
-                        });
+        axios
+            .get(weatherUrl, { headers: weatherConfig.headers })
+            .then((response) => {
+                if (response.status === "429") {
+                    return reject(response.httpMessage);
                 }
+                return db
+                    .drop("weatherDaily")
+                    .then(() => {
+                        db.insert("weatherDaily", response.data)
+                            .then(() => resolve())
+                            .catch((e) => reject(e));
+                    })
+                    .catch((e) => reject(e));
             })
-            .catch((e) => {
-                return reject(e);
-            });
+            .catch((e) => reject(e));
     });
-};
 
-const getNews = () => {
-    return new Promise(async (resolve, reject) => {
+const getNews = () =>
+    new Promise((resolve, reject) => {
         try {
-            fetch("https://www.pcgamer.com/uk/")
-                .then((data) => data.text())
-                .then(async (data) => {
-                    db.select("news")
+            return axios
+                .get("https://www.pcgamer.com/uk/", { responseType: "text" })
+                .then(async (response) =>
+                    db
+                        .select("news")
                         .then((articles) => {
-                            let pages = [];
-                            const page = HTMLparser.parse(data);
-                            let links = page.querySelectorAll(
-                                ".list-text-links-trending-panel"
+                            const pages = [];
+                            const document = HTMLparser.parse(response.data);
+                            const linkParents = HTMLparser.parse(
+                                document.querySelector(
+                                    ".list-text-links-trending-panel"
+                                )
                             );
-                            links = HTMLparser.parse(links);
 
-                            for (let link in links.childNodes[0].childNodes) {
-                                let scrape =
-                                    links.childNodes[0].childNodes[
-                                        link
-                                    ].toString();
-                                scrape = HTMLparser.parse(scrape);
-                                scrape = scrape.childNodes[0].childNodes;
-                                scrape = HTMLparser.parse(scrape);
-                                let scraped = scrape.querySelector("a");
-                                if (!!scraped && scraped !== undefined) {
-                                    pages.push(scraped.toString());
+                            linkParents.childNodes[0].childNodes.forEach(
+                                (child) => {
+                                    const linkContainer = HTMLparser.parse(
+                                        child.toString()
+                                    );
+                                    const linkChild =
+                                        linkContainer.querySelector("a");
+                                    if (linkChild && linkChild !== undefined) {
+                                        pages.push(linkChild.toString());
+                                    }
                                 }
-                            }
+                            );
 
                             if (!articles.itemsLength) {
-                                db.insert("news", { pages })
-                                    .then(() => {
-                                        return resolve();
-                                    })
-                                    .catch((e) => {
-                                        return reject(e);
-                                    });
-                            } else {
-                                db.drop("news").then(() => {
-                                    db.insert("news", { pages })
-                                        .then(() => {
-                                            return resolve();
-                                        })
-                                        .catch((e) => {
-                                            return reject(e);
-                                        });
-                                });
+                                return db
+                                    .insert("news", { pages })
+                                    .then(() => resolve())
+                                    .catch((e) => reject(e));
                             }
+                            return db.drop("news").then(() => {
+                                db.insert("news", { pages })
+                                    .then(() => resolve())
+                                    .catch((e) => reject(e));
+                            });
                         })
-                        .catch((e) => {
-                            return reject(e);
-                        });
-                });
+                        .catch((e) => reject(e))
+                );
         } catch (e) {
             return reject(e);
         }
     });
-};
 
-//////////////////
-//// HANDLER /////
-//////////////////
+/*--------------*/
+/*    HANDLER   */
+/*--------------*/
 
 const getSync = (req, res) => {
     try {
         console.debug(`${new Date()}: Attempting to sync...`);
         console.debug(`${new Date()}: Syncing Weather...`);
-        getWeather()
+        return getWeather()
             .then(() => {
                 console.debug(`${new Date()}: Syncing Weather Completed.`);
                 console.debug(`${new Date()}: Syncing News...`);
-                getNews()
+                return getNews()
                     .then(() => {
                         console.debug(`${new Date()}: Syncing News Completed.`);
                         return res.json({ message: "Sync Successful." });
                     })
-                    .catch((e) => {
-                        return res.status(502).json({ message: e.toString() });
-                    });
+                    .catch((e) =>
+                        res.status(502).json({ message: e.toString() })
+                    );
             })
             .catch((e) => {
+                console.log(e);
+
                 return res.status(502).json({ message: e.toString() });
             });
     } catch (e) {
+        console.log(e);
         return res.status(502).json({ message: e.toString() });
     }
 };
 
 module.exports = {
-    getSync: getSync,
+    getSync,
 };

@@ -1,17 +1,18 @@
-"use strict";
-
 const db = require("../adapters/db");
 
-//////////////////
-//// ACTIONS /////
-//////////////////
+/*--------------*/
+/*   ACTIONS    */
+/*--------------*/
 
 const listWeather = async (req, res) => {
     try {
         return res.json(
-            await db.select("weatherDaily").then((data) => {
-                data.location = data.items.features[0].properties.location.name;
-                data.days = data.items.features[0].properties.timeSeries;
+            await db.select("weatherDaily").then((weatherResponse) => {
+                const data = weatherResponse;
+                data.location =
+                    weatherResponse.items.features[0].properties.location.name;
+                data.days =
+                    weatherResponse.items.features[0].properties.timeSeries;
                 return data;
             })
         );
@@ -23,14 +24,12 @@ const listWeather = async (req, res) => {
     }
 };
 
-//////////////////
-//// HANDLER /////
-//////////////////
+/*--------------*/
+/*    HANDLER   */
+/*--------------*/
 
-const getWeather = (req, res) => {
-    return listWeather(req, res);
-};
+const getWeather = (req, res) => listWeather(req, res);
 
 module.exports = {
-    getWeather: getWeather,
+    getWeather,
 };
