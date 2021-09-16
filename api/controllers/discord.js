@@ -6,26 +6,28 @@ const { client } = Discord;
 /*   ACTIONS    */
 /*--------------*/
 
-const getActiveChannels = async (GUILD_ALL_CHANNELS) => {
-    const LIST_CHANNELS = [];
-    GUILD_ALL_CHANNELS.map(async (C) => {
-        const CHANNEL = C[1];
-        const CHANNEL_NAME = CHANNEL.name;
-        const CHANNEL_USERS = [...(await CHANNEL.members)];
+const getActiveChannels = async (guildAllChannels, guildUsers) => {
+    const listChannels = [];
+    guildAllChannels.map(async (C) => {
+        const channel = C;
+        const channelName = channel.name;
+        const channelUsers = [...guildUsers];
+        const members = await channel.members;
+        const userIds = members.map((member) => member.user.id);
 
-        const CHANNEL_DATA = {
-            name: CHANNEL_NAME,
-            channel: CHANNEL,
-            users: CHANNEL_USERS,
+        const channelData = {
+            name: channelName,
+            channel,
+            users: channelUsers.filter((user) => userIds.includes(user.id)),
         };
 
-        return LIST_CHANNELS.push(CHANNEL_DATA);
+        return listChannels.push(channelData);
     });
-    return LIST_CHANNELS;
+    return listChannels;
 };
 
 const listDiscord = async (req, res) => {
-    const GUILD_ID = client.guilds.cache
+    const guildId = client.guilds.cache
         .filter(
             (guild) =>
                 guild.name === `#${req.params.channel.toUpperCase()}` ||
@@ -34,29 +36,41 @@ const listDiscord = async (req, res) => {
         .keys()
         .next().value;
 
-    const GUILD_ITEM = await client.guilds.fetch(GUILD_ID);
+    const server = await client.guilds.fetch(guildId);
 
-    const GUILD_ALL_MEMBERS = GUILD_ITEM.members.cache.filter(
+    const guildAllMembers = await server.members.cache.filter(
         (member) => member
     );
 
-    const GUILD_ONLINE_MEMBERS = GUILD_ALL_MEMBERS.filter(
+    const guildOnlineMembers = guildAllMembers.filter(
         (member) =>
             member.presence &&
             !member.presence.user.bot &&
             member.presence.status !== "offline"
     );
 
-    const GUILD_ALL_CHANNELS = GUILD_ITEM.channels.cache.filter(
+    const users = await guildOnlineMembers.map((member) => {
+        const memberDetails = server.members.cache.get(member.user.id).user;
+        const user = {
+            nickname: member.nickname,
+            ...memberDetails,
+            avatarUrl: memberDetails.avatar
+                ? `https://cdn.discordapp.com/avatars/${member.user.id}/${memberDetails.avatar}.webp`
+                : "https://cdn.discordapp.com/embed/avatars/0.png",
+        };
+        return user;
+    });
+
+    const guildAllChannels = server.channels.cache.filter(
         (c) => c.type === "GUILD_VOICE"
     );
 
-    const GUILD_ACTIVE_CHANNELS = await getActiveChannels(GUILD_ALL_CHANNELS);
+    const channels = await getActiveChannels(guildAllChannels, users);
 
     return res.json({
-        server: GUILD_ITEM,
-        users: GUILD_ONLINE_MEMBERS,
-        channels: GUILD_ACTIVE_CHANNELS,
+        server,
+        users,
+        channels,
     });
 };
 

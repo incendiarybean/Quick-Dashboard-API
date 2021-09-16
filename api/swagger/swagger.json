@@ -14,14 +14,15 @@
     },
     "servers": [
         {
-            "url": "https://localhost:8000",
+            "url": "https://localhost:8000/api/v0",
             "description": "Local Development"
         },
         {
-            "url": "https://intranet-api.local",
+            "url": "https://intranet-api.local/api/v0",
             "description": "Hosted Internally"
         }
     ],
+
     "tags": [
         {
             "name": "Sticky Notes",
