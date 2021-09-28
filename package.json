@@ -4,7 +4,8 @@
     "description": "This is a quickstart swagger UI",
     "main": "src",
     "scripts": {
-        "start": "nodemon .",
+        "start": "NODE_ENV=production node .",
+        "sd": "nodemon .",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "Benjamin Weare",

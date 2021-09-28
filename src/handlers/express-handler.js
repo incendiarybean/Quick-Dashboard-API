@@ -20,7 +20,6 @@ const handler = async (app) => {
             "Access-Control-Allow-Headers",
             "Origin, X-Requested-With, x-api-key, Content-Type, Accept"
         );
-        console.log(req.headers);
         if (!req.headers["x-api-key"])
             return res.status(403).json({
                 message: "You're missing your API key!",

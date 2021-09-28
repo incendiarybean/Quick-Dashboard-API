@@ -13,6 +13,4 @@ echo "LAUNCHING: Bean-Dashboard-API."
 echo "                              "
 echo "------------------------------"
 
-yarn build
-
 yarn start
