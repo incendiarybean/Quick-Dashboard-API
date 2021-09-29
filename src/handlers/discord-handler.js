@@ -6,6 +6,7 @@ const client = new Client({
         Intents.FLAGS.GUILD_MESSAGES,
         Intents.FLAGS.GUILD_MEMBERS,
         Intents.FLAGS.GUILD_PRESENCES,
+        Intents.FLAGS.GUILD_VOICE_STATES,
     ],
 });
 const { Server } = require("socket.io");
@@ -30,64 +31,20 @@ const init = () => {
     });
 
     client.on("voiceStateUpdate", (data) => {
-        if (data.guild.voiceStates.cache.get(data.id).channelID === null) {
+        if (data.guild.voiceStates.cache.get(data.id).channelId === null) {
             return io.emit("DISCORD_UPDATE_USERS");
         }
 
-        if (
-            data.guild.voiceStates.cache.get(data.id).selfMute &&
-            data.guild.channels.cache.get(
-                data.guild.voiceStates.cache.get(data.id).channelID
-            ).name !== "On Reddit, Shitting (Not really AFK)"
-        ) {
-            if (client.users.cache.get(data.id).username === "Sentinel") {
-                data.guild.members.cache
-                    .get(data.id)
-                    .voice.setChannel(
-                        data.guild.channels.cache.find(
-                            (channel) =>
-                                channel.name ===
-                                "On Reddit, Shitting (Not really AFK)"
-                        )
-                    );
+        const channel = data.guild.channels.cache.get(
+            data.guild.voiceStates.cache.get(data.id).channelId
+        );
+        const { name } = channel;
 
-                const messageChannel = data.guild.channels.cache.find(
-                    (channel) => channel.name === "sloots"
-                );
-
-                messageChannel
-                    .send(
-                        `${
-                            client.users.cache.get(data.id).username
-                        } Muted themselves... again.`
-                    )
-                    .then((msg) => msg.delete({ timeout: 10000 }))
-                    .catch((e) => console.log(e));
-
-                data.guild.members.cache
-                    .get(data.id)
-                    .send(
-                        "**Steps to reconnect to the Voice Channel:**\n\r    *1. Disconnect from the Voice Channels completely.*\n\r    *2. Unmute yourself.*\n\r    *3. Click the Voice Channel to connect.*"
-                    )
-                    .catch((e) => console.log(e));
-            }
-
-            io.emit("DISCORD_UPDATE_USERS");
-
-            return io.emit("DISCORD_MUTE", {
-                user: client.users.cache.get(data.id).username,
-                channel: data.guild.channels.cache.get(
-                    data.guild.voiceStates.cache.get(data.id).channelID
-                ).name,
-            });
-        }
         io.emit("DISCORD_UPDATE_USERS");
 
         return io.emit("DISCORD_CONNECTED", {
             user: client.users.cache.get(data.id).username,
-            channel: data.guild.channels.cache.get(
-                data.guild.voiceStates.cache.get(data.id).channelID
-            ).name,
+            channel: name,
         });
     });
 

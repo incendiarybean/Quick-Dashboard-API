@@ -23,7 +23,6 @@ const getWeather = async () =>
                 if (response.status === "429") {
                     return reject(response.httpMessage);
                 }
-                console.log(response);
                 return db
                     .drop("weatherDaily")
                     .then(() => {
