@@ -11,11 +11,13 @@ const client = new Client({
 });
 const { Server } = require("socket.io");
 
-const io = new Server(process.env.DISCORD_PORT);
+const init = (server) => {
+    const io = new Server(server);
 
-const init = () => {
     console.log(
-        `[${new Date()}] Launching socket on ${process.env.DISCORD_PORT}`
+        `[${new Date()}] Discord IO launching on socket ${
+            process.env.DISCORD_PORT
+        }`
     );
 
     client.on("message", (message) => {
@@ -64,7 +66,6 @@ const init = () => {
 };
 
 module.exports = {
-    io,
     client,
     init,
 };
