@@ -2,7 +2,6 @@ const express = require("express");
 const fs = require("fs");
 
 const app = express();
-const handlers = require("./handlers");
 
 require("dotenv").config();
 
@@ -13,7 +12,7 @@ process.env.NODE_ENV = process.env.NODE_ENV
     : "development";
 console.log(`[${new Date().toISOString()}] ENV: ${process.env.NODE_ENV}`);
 
-require("https")
+const server = require("https")
     .createServer(
         {
             pfx: fs.readFileSync("./cert/certificate.pfx"),
@@ -28,5 +27,7 @@ require("https")
         );
     });
 
+const handlers = require("./handlers");
+
 handlers.Routes(app);
-handlers.Discord.init();
+handlers.Discord.init(server);
