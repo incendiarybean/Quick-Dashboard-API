@@ -48,7 +48,7 @@ const listDiscord = async (req, res) => {
 
     const server = await client.guilds.fetch(guildId);
 
-    const guildOnlineMembers = server.members.cache.filter(
+    const guildOnlineMembers = await server.members.cache.filter(
         (member) =>
             member.presence &&
             !member.presence.user.bot &&

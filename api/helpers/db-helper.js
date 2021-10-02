@@ -106,17 +106,10 @@ module.exports = {
                     .toArray((err, res) => {
                         if (err) return reject(err);
                         connection.client.close();
-                        if (res.length > 1) {
-                            return resolve({
-                                message: "Success",
-                                itemsLength: res.length,
-                                items: res,
-                            });
-                        }
                         return resolve({
                             message: "Success",
                             itemsLength: res.length,
-                            items: res[0],
+                            items: res,
                         });
                     });
             });

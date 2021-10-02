@@ -9,7 +9,7 @@ const listNews = async (req, res) => {
         return res.json(
             await db.select("news").then((response) => {
                 const data = response;
-                data.items = response.items.pages;
+                data.items = response.items[0].pages;
                 return data;
             })
         );

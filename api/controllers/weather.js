@@ -9,10 +9,13 @@ const listWeather = async (req, res) => {
         return res.json(
             await db.select("weatherDaily").then((weatherResponse) => {
                 const data = weatherResponse;
-                data.location =
-                    weatherResponse.items.features[0].properties.location.name;
-                data.days =
-                    weatherResponse.items.features[0].properties.timeSeries;
+                const [items] = weatherResponse.items;
+                const { features } = weatherResponse.items[0];
+
+                data.items = items;
+                data.location = features[0].properties.location.name;
+                data.days = features[0].properties.timeSeries;
+
                 return data;
             })
         );
