@@ -22,4 +22,5 @@ COPY --from=build intranet-api/src /intranet-api/src
 
 COPY . ./
 
+RUN ["chmod", "+x", "./run.sh"]
 CMD [ "./run.sh" ]
