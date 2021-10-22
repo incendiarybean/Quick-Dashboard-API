@@ -68,7 +68,7 @@ const getPCNews = () =>
                         ).getAttribute("data-original"),
                         date: new Date(
                             HTMLDivElement.querySelector(
-                                ".published-date"
+                                ".relative-date"
                             ).getAttribute("datetime")
                         ).toLocaleDateString(),
                         site: HTMLDivElement.querySelector("a").href.split(
