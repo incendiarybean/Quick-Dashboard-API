@@ -38,7 +38,7 @@ const getWeather = async () =>
 const getPCNews = () =>
     new Promise((resolve) =>
         axios
-            .get("http://www.pcgamer.com/uk/", { responseType: "text" })
+            .get("https://www.pcgamer.com/uk/", { responseType: "text" })
             .then(async (response) => {
                 const { document } = new JSDOM(response.data).window;
                 const newArticles = [];
@@ -68,7 +68,7 @@ const getPCNews = () =>
                         ).getAttribute("data-original"),
                         date: new Date(
                             HTMLDivElement.querySelector(
-                                ".published-date"
+                                ".relative-date"
                             ).getAttribute("datetime")
                         ).toLocaleDateString(),
                         site: HTMLDivElement.querySelector("a").href.split(
@@ -81,7 +81,8 @@ const getPCNews = () =>
 
                 resolve(newArticles);
             })
-            .catch(() => {
+            .catch((e) => {
+                console.log(e);
                 console.log(`Failed to get PC News... Retrying.`);
                 return getPCNews();
             })
