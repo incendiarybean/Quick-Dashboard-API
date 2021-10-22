@@ -68,7 +68,7 @@ const getPCNews = () =>
                         ).getAttribute("data-original"),
                         date: new Date(
                             HTMLDivElement.querySelector(
-                                ".relative-date"
+                                ".published-date"
                             ).getAttribute("datetime")
                         ).toLocaleDateString(),
                         site: HTMLDivElement.querySelector("a").href.split(
@@ -81,8 +81,7 @@ const getPCNews = () =>
 
                 resolve(newArticles);
             })
-            .catch((e) => {
-                console.log(e);
+            .catch(() => {
                 console.log(`Failed to get PC News... Retrying.`);
                 return getPCNews();
             })
