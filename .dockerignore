@@ -13,3 +13,4 @@ Dockerfile.prod
 .gitignore
 README.md
 src/index.css
+package-lock.json
