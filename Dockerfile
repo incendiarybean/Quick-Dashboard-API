@@ -2,8 +2,8 @@
 FROM node:slim as build
 ENV NODE_ENV=production
 
-WORKDIR /intranet-api
-ENV PATH /intranet-api/node_modules/.bin:$PATH
+WORKDIR /quick-dashboard-api
+ENV PATH /quick-dashboard-api/node_modules/.bin:$PATH
 
 COPY ./package.json ./
 COPY ./package-lock.json ./
@@ -13,12 +13,12 @@ COPY . .
 
 #PROD
 FROM node:slim
-WORKDIR /intranet-api
+WORKDIR /quick-dashboard-api
 
-COPY --from=build intranet-api/run.sh /intranet-api/run.sh
-COPY --from=build intranet-api/package.json /intranet-api/package.json
-COPY --from=build intranet-api/api /intranet-api/api
-COPY --from=build intranet-api/src /intranet-api/src
+COPY --from=build quick-dashboard-api/run.sh /quick-dashboard-api/run.sh
+COPY --from=build quick-dashboard-api/package.json /quick-dashboard-api/package.json
+COPY --from=build quick-dashboard-api/api /quick-dashboard-api/api
+COPY --from=build quick-dashboard-api/src /quick-dashboard-api/src
 
 COPY . ./
 
