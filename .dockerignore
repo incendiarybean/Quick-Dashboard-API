@@ -14,3 +14,4 @@ Dockerfile.prod
 README.md
 src/index.css
 package-lock.json
+nodemon.json
