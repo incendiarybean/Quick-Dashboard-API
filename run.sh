@@ -9,7 +9,7 @@ echo "------------------------------"
 echo "INSTALLING: Complete!"
 echo "------------------------------"
 echo "                              "
-echo "LAUNCHING: Bean-Dashboard-API."
+echo "LAUNCHING: QUICK-DASHBOARD-API."
 echo "                              "
 echo "------------------------------"
 

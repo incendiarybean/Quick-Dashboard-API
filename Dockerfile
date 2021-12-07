@@ -1,5 +1,5 @@
 #BUILD
-FROM node:slim as build
+FROM node:16.9.1-slim as build
 ENV NODE_ENV=production
 
 WORKDIR /quick-dashboard-api
@@ -12,7 +12,7 @@ COPY ./run.sh ./
 COPY . .
 
 #PROD
-FROM node:slim
+FROM node:16.9.1-slim
 WORKDIR /quick-dashboard-api
 
 COPY --from=build quick-dashboard-api/run.sh /quick-dashboard-api/run.sh
